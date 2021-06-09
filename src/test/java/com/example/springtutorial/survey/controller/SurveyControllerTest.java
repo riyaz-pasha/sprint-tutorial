@@ -1,6 +1,7 @@
 package com.example.springtutorial.survey.controller;
 
 import com.example.springtutorial.SpringTutorialApplication;
+import com.example.springtutorial.question.model.Question;
 import org.json.JSONException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,6 +13,8 @@ import org.springframework.http.*;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Arrays;
+
+import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = SpringTutorialApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -33,5 +36,25 @@ public class SurveyControllerTest {
 
         JSONAssert.assertEquals(expected, response.getBody(), false);
 
+    }
+
+    @Test
+    public void addQuestionToSurvey() {
+        String url = "http://localhost:" + port + "/surveys/Survey1/questions";
+        TestRestTemplate testRestTemplate = new TestRestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        Question question = new Question(
+                "DOESNTMATTER",
+                "Question1",
+                "Russia",
+                Arrays.asList("India", "Russia", "United States", "China")
+        );
+        HttpEntity<String> entity = new HttpEntity(question, headers);
+
+        ResponseEntity<String> response = testRestTemplate.exchange(url, HttpMethod.POST, entity, String.class);
+        String actual = response.getHeaders().get(HttpHeaders.LOCATION).get(0);
+
+        assertTrue(actual.contains("/surveys/Survey1/questions/"));
     }
 }
