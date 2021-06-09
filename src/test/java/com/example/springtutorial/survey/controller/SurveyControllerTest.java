@@ -3,6 +3,7 @@ package com.example.springtutorial.survey.controller;
 import com.example.springtutorial.SpringTutorialApplication;
 import com.example.springtutorial.question.model.Question;
 import org.json.JSONException;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -23,13 +24,18 @@ public class SurveyControllerTest {
     @LocalServerPort
     private int port;
 
+    TestRestTemplate testRestTemplate = new TestRestTemplate();
+    HttpHeaders headers = new HttpHeaders();
+
+    @Before
+    public void beforeEach() {
+        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+    }
+
     @Test
     public void testRetrieveSurveyQuestion() throws JSONException {
-        String url = "http://localhost:" + port + "/surveys/Survey1/questions/Question1";
+        String url = createURLWithPort("/surveys/Survey1/questions/Question1");
         String expected = "{id:Question1,description:\"Largest Country in the World\",correctAnswer:Russia}";
-        TestRestTemplate testRestTemplate = new TestRestTemplate();
-        HttpHeaders headers = new HttpHeaders();
-        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
         HttpEntity<String> entity = new HttpEntity<>(null, headers);
 
         ResponseEntity<String> response = testRestTemplate.exchange(url, HttpMethod.GET, entity, String.class);
@@ -38,12 +44,10 @@ public class SurveyControllerTest {
 
     }
 
+
     @Test
     public void addQuestionToSurvey() {
-        String url = "http://localhost:" + port + "/surveys/Survey1/questions";
-        TestRestTemplate testRestTemplate = new TestRestTemplate();
-        HttpHeaders headers = new HttpHeaders();
-        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        String url = createURLWithPort("/surveys/Survey1/questions");
         Question question = new Question(
                 "DOESNTMATTER",
                 "Question1",
@@ -56,5 +60,9 @@ public class SurveyControllerTest {
         String actual = response.getHeaders().get(HttpHeaders.LOCATION).get(0);
 
         assertTrue(actual.contains("/surveys/Survey1/questions/"));
+    }
+
+    private String createURLWithPort(String uri) {
+        return "http://localhost:" + port + uri;
     }
 }
